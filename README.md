@@ -87,41 +87,57 @@ docker compose up -d --build
 
 ### Локальное развертывание с Docker Compose (рекомендуемый способ)
 
+**⚠️ Важно**: В зависимости от версии Docker используйте правильную команду:
+- **Docker Compose v2** (новая): `docker compose` (с пробелом)
+- **Docker Compose v1** (старая): `docker-compose` (с дефисом)
+
 **Запуск:**
 ```bash
-# Запустить в фоновом режиме с пересборкой
+# Для новых версий Docker (v2+)
 docker compose up -d --build
 
+# Для старых версий Docker (v1)
+docker-compose up -d --build
+
 # Просмотр логов в реальном времени
-docker compose logs -f tester
+docker compose logs -f tester        # v2
+docker-compose logs -f tester        # v1
 
 # Проверка статуса контейнера
-docker compose ps
+docker compose ps                    # v2
+docker-compose ps                    # v1
 ```
 
 **Остановка:**
 ```bash
 # Остановить и удалить контейнер
-docker compose down
+docker compose down                   # v2
+docker-compose down                   # v1
 
 # Остановить контейнер (без удаления)
-docker compose stop tester
+docker compose stop tester           # v2
+docker-compose stop tester           # v1
 
 # Перезапуск после изменения кода (без пересборки)
-docker compose restart tester
+docker compose restart tester        # v2
+docker-compose restart tester        # v1
 ```
 
 **Управление:**
 ```bash
 # Ручной запуск отдельных модулей для тестирования
-docker compose run --rm tester python -m app.form_tester
-docker compose run --rm tester python -m app.check_email
+docker compose run --rm tester python -m app.form_tester    # v2
+docker-compose run --rm tester python -m app.form_tester    # v1
+docker compose run --rm tester python -m app.check_email    # v2
+docker-compose run --rm tester python -m app.check_email    # v1
 
 # Пересборка образа (после изменений в requirements.txt или Dockerfile)
-docker compose build --no-cache tester
+docker compose build --no-cache tester                      # v2
+docker-compose build --no-cache tester                      # v1
 
 # Просмотр логов определенного периода
-docker compose logs --since="1h" tester
+docker compose logs --since="1h" tester                     # v2
+docker-compose logs --since="1h" tester                     # v1
 ```
 
 ### Локальная сборка и запуск без Compose
@@ -160,14 +176,18 @@ nano .env
 # Добавьте все обязательные переменные из раздела выше
 
 # Запуск в продакшн режиме
-docker compose up -d --build
+docker compose up -d --build           # v2
+docker-compose up -d --build           # v1
 
 # Проверка статуса и логов
-docker compose ps
-docker compose logs -f tester
+docker compose ps                       # v2
+docker-compose ps                       # v1
+docker compose logs -f tester           # v2
+docker-compose logs -f tester           # v1
 
 # Остановка
-docker compose down
+docker compose down                     # v2
+docker-compose down                     # v1
 ```
 
 **Только с Docker (без Compose):**
@@ -247,7 +267,8 @@ tail -f logs/*.log
 tail -f logs/forms_test.log
 
 # Просмотр логов контейнера
-docker compose logs -f tester --tail=100
+docker compose logs -f tester --tail=100        # v2
+docker-compose logs -f tester --tail=100        # v1
 ```
 
 ### Устранение неполадок
