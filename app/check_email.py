@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 import requests
 import logging
 import os
+import time
 
 # === ЛОГИРОВАНИЕ ===
 LOG_DIR = os.getenv("LOG_DIR", "logs")
@@ -31,6 +32,11 @@ LOOKBACK_MINUTES = int(os.getenv("LOOKBACK_MINUTES", "15"))
 # === ТЕЛЕГРАМ ===
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN", "")  # Должно быть передано через переменные окружения
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "")  # Должно быть передано через переменные окружения
+
+# === НАСТРОЙКИ RETRY ===
+TELEGRAM_MAX_RETRIES = int(os.getenv("TELEGRAM_MAX_RETRIES", "3"))  # Максимальное количество попыток отправки
+TELEGRAM_RETRY_DELAY = float(os.getenv("TELEGRAM_RETRY_DELAY", "1.0"))  # Начальная задержка в секундах
+TELEGRAM_TIMEOUT = int(os.getenv("TELEGRAM_TIMEOUT", "30"))  # Таймаут для запросов в секундах
 
 # === ДАННЫЕ ДЛЯ ПРОВЕРКИ ФОРМ ===
 FORMS = {
@@ -195,15 +201,71 @@ def delete_emails(msg_ids):
 
 
 def send_telegram_message(text):
+    """
+    Отправка сообщения в Telegram с retry-логикой и экспоненциальными задержками.
+    """
     url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
-    try:
-        logger.info("📤 Отправляем отчет в Telegram...")
-        resp = requests.post(url, data={"chat_id": TELEGRAM_CHAT_ID, "text": text, "parse_mode": "HTML"})
-        resp.raise_for_status()
-        logger.info("✅ Сообщение успешно отправлено в Telegram.")
-    except requests.exceptions.RequestException as e:
-        logger.error(f"❌ Ошибка при отправке Telegram-сообщения: {e}")
-        logger.debug(f"Ответ от Telegram: {resp.text if 'resp' in locals() else 'Нет ответа'}")
+    payload = {
+        "chat_id": TELEGRAM_CHAT_ID, 
+        "text": text, 
+        "parse_mode": "HTML"
+    }
+    
+    for attempt in range(1, TELEGRAM_MAX_RETRIES + 1):
+        try:
+            if attempt == 1:
+                logger.info("📤 Отправляем отчет в Telegram...")
+            else:
+                logger.info(f"🔄 Повторная попытка отправки в Telegram ({attempt}/{TELEGRAM_MAX_RETRIES})")
+            
+            resp = requests.post(
+                url, 
+                data=payload, 
+                timeout=TELEGRAM_TIMEOUT,
+                headers={'User-Agent': 'FormTester/1.0'}
+            )
+            resp.raise_for_status()
+            
+            logger.info("✅ Сообщение успешно отправлено в Telegram.")
+            return True
+            
+        except requests.exceptions.SSLError as e:
+            error_msg = f"SSL ошибка (попытка {attempt}/{TELEGRAM_MAX_RETRIES}): {e}"
+            logger.warning(f"🔐 {error_msg}")
+            if attempt == TELEGRAM_MAX_RETRIES:
+                logger.error("❌ Все попытки исчерпаны. SSL соединение с Telegram недоступно.")
+                return False
+                
+        except requests.exceptions.Timeout as e:
+            error_msg = f"Таймаут (попытка {attempt}/{TELEGRAM_MAX_RETRIES}): {e}"
+            logger.warning(f"⏰ {error_msg}")
+            if attempt == TELEGRAM_MAX_RETRIES:
+                logger.error("❌ Все попытки исчерпаны. Telegram API не отвечает в течение установленного времени.")
+                return False
+                
+        except requests.exceptions.ConnectionError as e:
+            error_msg = f"Ошибка соединения (попытка {attempt}/{TELEGRAM_MAX_RETRIES}): {e}"
+            logger.warning(f"🌐 {error_msg}")
+            if attempt == TELEGRAM_MAX_RETRIES:
+                logger.error("❌ Все попытки исчерпаны. Невозможно установить соединение с Telegram API.")
+                return False
+                
+        except requests.exceptions.RequestException as e:
+            error_msg = f"Общая ошибка HTTP (попытка {attempt}/{TELEGRAM_MAX_RETRIES}): {e}"
+            logger.warning(f"🔸 {error_msg}")
+            if 'resp' in locals():
+                logger.debug(f"Ответ от Telegram (статус {resp.status_code}): {resp.text}")
+            if attempt == TELEGRAM_MAX_RETRIES:
+                logger.error("❌ Все попытки исчерпаны. Не удалось отправить сообщение в Telegram.")
+                return False
+        
+        # Экспоненциальная задержка перед следующей попыткой
+        if attempt < TELEGRAM_MAX_RETRIES:
+            delay = TELEGRAM_RETRY_DELAY * (2 ** (attempt - 1))  # 1s, 2s, 4s, 8s...
+            logger.info(f"⏳ Ожидание {delay:.1f} сек. перед следующей попыткой...")
+            time.sleep(delay)
+    
+    return False
 
 
 if __name__ == "__main__":

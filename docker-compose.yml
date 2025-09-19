@@ -5,7 +5,7 @@ services:
     env_file: .env
     environment:
       - LOG_DIR=/app/logs
-      - SCHEDULE_DAILY_AT=05:00
+      - SCHEDULE_DAILY_AT=19:20
       - SCHEDULE_TZ=Europe/Moscow
       - RUN_ON_START=false
     volumes:
