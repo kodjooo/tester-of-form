@@ -3,6 +3,12 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
+# Отключаем интерактивные диалоги для apt и debconf
+ENV DEBIAN_FRONTEND=noninteractive
+ENV DEBCONF_NONINTERACTIVE_SEEN=true
+# Отключаем предупреждения pip о root пользователе
+ENV PIP_ROOT_USER_ACTION=ignore
+
 # Устанавливаем системные зависимости для Playwright
 RUN apt-get update && apt-get install -y \
     wget \
@@ -21,9 +27,10 @@ RUN apt-get update && apt-get install -y \
     xdg-utils \
     && rm -rf /var/lib/apt/lists/*
 
-# Устанавливаем зависимости Python
+# Обновляем pip и устанавливаем зависимости Python
 COPY requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --upgrade pip && \
+    pip install --no-cache-dir --no-warn-script-location -r requirements.txt
 
 # Устанавливаем браузеры Playwright
 RUN playwright install chromium
