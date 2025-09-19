@@ -1,0 +1,10 @@
+.git
+.gitignore
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+**/*.pyd
+**/*.log
+logs/
+.DS_Store
+.cursor/

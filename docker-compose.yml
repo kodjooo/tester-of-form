@@ -1,0 +1,12 @@
+services:
+  tester:
+    build: .
+    container_name: tester-of-form
+    env_file: .env
+    environment:
+      - LOG_DIR=/app/logs
+    volumes:
+      - ./logs:/app/logs
+      - ./app:/app/app
+    command: ["python", "-m", "app.run"]
+    restart: unless-stopped

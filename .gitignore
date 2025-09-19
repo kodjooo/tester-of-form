@@ -1,0 +1,20 @@
+# OS/IDE
+.DS_Store
+.cursor/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Logs
+logs/
+*.log
+
+# Env
+.env
+.env.*
+
+# Docker
+*.pid
