@@ -44,7 +44,7 @@ FORMS = {
         "Форма 1": [
             "Metawebart.com",
             "mark.aborchie@gmail.com",
-            "+00000000"
+            "00000000"
         ],
         "Форма 2": [
             "Metawebart.com",
