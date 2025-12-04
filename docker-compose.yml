@@ -13,3 +13,4 @@ services:
       - ./app:/app/app
     command: ["python", "-m", "app.run"]
     restart: unless-stopped
+    network_mode: bridge
