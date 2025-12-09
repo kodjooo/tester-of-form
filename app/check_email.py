@@ -43,33 +43,33 @@ FORMS = {
     "metawebart.com": {
         "Форма 1": [
             "Metawebart.com",
-            "mark.aborchie@gmail.com",
-            "00000000"
+            "mark.aborchi@gmail.com",
+            "40000000"
         ],
         "Форма 2": [
             "Metawebart.com",
-            "00000000"
+            "40000000"
         ],
         "Форма 3": [
             "Metawebart.com",
-            "mark.aborchie@gmail.com",
-            "11111111"
+            "mark.aborchi@gmail.com",
+            "41111111"
         ],
         "Форма 4": [
             "Metawebart.com",
-            "11111111"
+            "41111111"
         ]
     },
     "meta-sistem.md": {
         "Форма 5": [
             "meta-sistem.md",
-            "mark.aborchie@gmail.com",
-            "0000000"
+            "mark.aborchi@gmail.com",
+            "4000000"
         ],
         "Форма 6": [
             "meta-sistem.md",
-            "mark.aborchie@gmail.com",
-            "0000001",
+            "mark.aborchi@gmail.com",
+            "4000001",
             "https://meta-test.com/"
         ]
     }

@@ -16,8 +16,8 @@ logging.basicConfig(
 
 TEST_DATA = {
     "name": "Тестовый Марк",
-    "email": "mark.aborchie@gmail.com",
-    "phone": "00000000",
+    "email": "mark.aborchi@gmail.com",
+    "phone": "40000000",
     "website": "https://meta-test.com/"
 }
 
@@ -90,11 +90,11 @@ async def fill_and_submit_form(page, form_type, url, popup_button=None):
             await try_fill("input[name='SubscribeForm[email]']", TEST_DATA["email"])
 
         if form_type == "Форма 5":
-            phone_value = "+79990000000"
+            phone_value = "+79994000000"
         elif form_type == "Форма 6":
-            phone_value = "+79990000001"
+            phone_value = "+79994000001"
         elif form_type in ["Форма 3", "Форма 4"]:
-            phone_value = "11111111"
+            phone_value = "41111111"
         else:
             phone_value = TEST_DATA["phone"]
 
