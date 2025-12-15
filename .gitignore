@@ -15,6 +15,7 @@ logs/
 # Env
 .env
 .env.*
+.venv/
 
 # Docker
 *.pid
