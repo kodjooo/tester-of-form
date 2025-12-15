@@ -48,7 +48,7 @@ FORMS = {
         ],
         "Форма 2": [
             "Metawebart.com",
-            "40000000"
+            "40000001"
         ],
         "Форма 3": [
             "Metawebart.com",

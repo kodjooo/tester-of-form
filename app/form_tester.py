@@ -97,6 +97,8 @@ async def fill_and_submit_form(page, form_type, url, popup_button=None):
             phone_value = "41111111"
         elif form_type == "Форма 4":
             phone_value = "41111112"
+        elif form_type == "Форма 2":
+            phone_value = "40000001"
         else:
             phone_value = TEST_DATA["phone"]
 
