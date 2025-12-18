@@ -24,8 +24,19 @@ TEST_DATA = {
 async def fill_and_submit_form(page, form_type, url, popup_button=None):
     try:
         logging.info(f"[{form_type}] Переход на страницу: {url}")
-        await page.goto(url, wait_until="load", timeout=60000)
-        logging.info(f"[{form_type}] Страница загружена")
+        timeouts = [60000, 90000, 120000]
+        for attempt, timeout in enumerate(timeouts, start=1):
+            try:
+                await page.goto(url, wait_until="load", timeout=timeout)
+                logging.info(f"[{form_type}] Страница загружена (попытка {attempt}, таймаут {timeout}мс)")
+                break
+            except PlaywrightTimeoutError:
+                if attempt == len(timeouts):
+                    raise
+                logging.warning(
+                    f"[{form_type}] Таймаут загрузки страницы на попытке {attempt} при ожидании {timeout}мс. "
+                    f"Повторяем..."
+                )
 
         if form_type == "Форма 5":
             try:

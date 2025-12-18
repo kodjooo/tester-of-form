@@ -169,7 +169,7 @@ docker logs -f tester-of-form
 **С Docker Compose (если установлен):**
 ```bash
 # На сервере
-git clone <YOUR_REPO_URL>.git tester-of-form && cd tester-of-form
+git clone https://github.com/kodjooo/tester-of-form.git && cd tester-of-form
 
 # Создайте файл .env с вашими настройками
 nano .env
@@ -193,7 +193,7 @@ docker-compose down                     # v1
 **Только с Docker (без Compose):**
 ```bash
 # На сервере
-git clone <YOUR_REPO_URL>.git tester-of-form && cd tester-of-form
+git clone https://github.com/kodjooo/tester-of-form.git && cd tester-of-form
 
 # Создайте файл .env с настройками
 nano .env
