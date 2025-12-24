@@ -213,11 +213,12 @@ async def fill_and_submit_form(page, form_type, url, popup_button=None):
 
         logging.info(f"[{form_type}] Ждём 5 секунд после отправки формы")
         await asyncio.sleep(5)
-        if form_type == "Форма 2":
+        if form_type in {"Форма 2", "Форма 4"}:
             try:
                 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-                screenshot_path = os.path.join(LOG_DIR, f"form2_after_submit_{timestamp}.png")
-                html_path = os.path.join(LOG_DIR, f"form2_after_submit_{timestamp}.html")
+                form_tag = "form2" if form_type == "Форма 2" else "form4"
+                screenshot_path = os.path.join(LOG_DIR, f"{form_tag}_after_submit_{timestamp}.png")
+                html_path = os.path.join(LOG_DIR, f"{form_tag}_after_submit_{timestamp}.html")
                 await page.screenshot(path=screenshot_path, full_page=True)
                 html = await page.content()
                 with open(html_path, "w", encoding="utf-8") as f:
