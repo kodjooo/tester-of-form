@@ -197,10 +197,28 @@ async def fill_and_submit_form(page, form_type, url, popup_button=None):
             except Exception as e:
                 logging.warning(f"[{form_type}] Ошибка при клике по 'option-web': {e}")
 
+        def _form_tag_for_filename():
+            return form_type.replace("Форма ", "form").lower().replace(" ", "_")
+
+        def _selector_tag(selector):
+            return "".join(c if c.isalnum() else "_" for c in selector).strip("_")
+
         async def click_if_exists(selector):
             try:
                 logging.info(f"[{form_type}] Поиск кнопки отправки: {selector}")
                 btn = await page.wait_for_selector(selector, state="visible", timeout=5000)
+                if form_type in {"Форма 1", "Форма 2", "Форма 3", "Форма 4"}:
+                    try:
+                        await asyncio.sleep(1)
+                        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                        screenshot_name = (
+                            f"{_form_tag_for_filename()}_before_submit_{timestamp}_{_selector_tag(selector)}.png"
+                        )
+                        screenshot_path = os.path.join(LOG_DIR, screenshot_name)
+                        await page.screenshot(path=screenshot_path, full_page=True)
+                        logging.info(f"[{form_type}] Сохранен скрин перед отправкой: {screenshot_path}")
+                    except Exception as e:
+                        logging.warning(f"[{form_type}] Не удалось сохранить скрин перед отправкой: {e}")
                 await btn.click(force=True)
                 logging.info(f"[{form_type}] Кнопка {selector} нажата")
                 return True
