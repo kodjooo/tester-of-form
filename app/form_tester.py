@@ -28,16 +28,18 @@ async def fill_and_submit_form(page, form_type, url, popup_button=None):
         for attempt, timeout in enumerate(timeouts, start=1):
             try:
                 await page.goto(url, wait_until="load", timeout=timeout)
-        logging.info(f"[{form_type}] Страница загружена (попытка {attempt}, таймаут {timeout}мс)")
-        if form_type in {"Форма 1", "Форма 2", "Форма 3", "Форма 4"}:
-            try:
-                cookie_selector = "#cookie_agree"
-                await page.wait_for_selector(cookie_selector, timeout=5000)
-                await page.click(cookie_selector)
-                logging.info(f"[{form_type}] Нажали cookie_agree")
-            except Exception as e:
-                logging.warning(f"[{form_type}] Не удалось нажать cookie_agree: {e}")
-        break
+                logging.info(
+                    f"[{form_type}] Страница загружена (попытка {attempt}, таймаут {timeout}мс)"
+                )
+                if form_type in {"Форма 1", "Форма 2", "Форма 3", "Форма 4"}:
+                    try:
+                        cookie_selector = "#cookie_agree"
+                        await page.wait_for_selector(cookie_selector, timeout=5000)
+                        await page.click(cookie_selector)
+                        logging.info(f"[{form_type}] Нажали cookie_agree")
+                    except Exception as e:
+                        logging.warning(f"[{form_type}] Не удалось нажать cookie_agree: {e}")
+                break
             except PlaywrightTimeoutError:
                 if attempt == len(timeouts):
                     raise
