@@ -33,7 +33,7 @@ async def fill_and_submit_form(page, form_type, url, popup_button=None):
                 )
                 if form_type in {"Форма 1", "Форма 2", "Форма 3", "Форма 4"}:
                     try:
-                        cookie_selector = "#cookie_agree"
+                        cookie_selector = ".cookie_agree"
                         await page.wait_for_selector(cookie_selector, timeout=5000)
                         await page.click(cookie_selector)
                         logging.info(f"[{form_type}] Нажали cookie_agree")
