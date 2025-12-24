@@ -213,6 +213,18 @@ async def fill_and_submit_form(page, form_type, url, popup_button=None):
 
         logging.info(f"[{form_type}] Ждём 5 секунд после отправки формы")
         await asyncio.sleep(5)
+        if form_type == "Форма 2":
+            try:
+                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                screenshot_path = os.path.join(LOG_DIR, f"form2_after_submit_{timestamp}.png")
+                html_path = os.path.join(LOG_DIR, f"form2_after_submit_{timestamp}.html")
+                await page.screenshot(path=screenshot_path, full_page=True)
+                html = await page.content()
+                with open(html_path, "w", encoding="utf-8") as f:
+                    f.write(html)
+                logging.info(f"[{form_type}] Сохранены диагностические файлы: {screenshot_path}, {html_path}")
+            except Exception as e:
+                logging.warning(f"[{form_type}] Не удалось сохранить диагностику после отправки: {e}")
 
         success_msg = f"✅ Успешно отправлена форма: {form_type}"
         logging.info(success_msg)
@@ -226,12 +238,8 @@ async def fill_and_submit_form(page, form_type, url, popup_button=None):
 
 async def main():
     forms = [
-        {"name": "Форма 1", "url": "https://www.metawebart.com/en", "popup_button": "#consultation-button"},
         {"name": "Форма 2", "url": "https://www.metawebart.com/en", "popup_button": None},
-        {"name": "Форма 3", "url": "https://www.metawebart.com/en/page/large_projects-ru", "popup_button": "#consultation-button"},
         {"name": "Форма 4", "url": "https://www.metawebart.com/en/page/large_projects-ru", "popup_button": None},
-        {"name": "Форма 5", "url": "https://meta-sistem.md", "popup_button": "section#hero .btn"},
-        {"name": "Форма 6", "url": "https://meta-sistem.md/ru/web", "popup_button": None}
     ]
 
     results = []
