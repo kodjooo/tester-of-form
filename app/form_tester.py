@@ -211,10 +211,12 @@ async def fill_and_submit_form(page, form_type, url, popup_button=None):
                     try:
                         await asyncio.sleep(1)
                         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                        screenshots_dir = os.path.join(LOG_DIR, "screenshots")
+                        os.makedirs(screenshots_dir, exist_ok=True)
                         screenshot_name = (
                             f"{_form_tag_for_filename()}_before_submit_{timestamp}_{_selector_tag(selector)}.png"
                         )
-                        screenshot_path = os.path.join(LOG_DIR, screenshot_name)
+                        screenshot_path = os.path.join(screenshots_dir, screenshot_name)
                         await page.screenshot(path=screenshot_path, full_page=True)
                         logging.info(f"[{form_type}] Сохранен скрин перед отправкой: {screenshot_path}")
                     except Exception as e:
@@ -245,7 +247,9 @@ async def fill_and_submit_form(page, form_type, url, popup_button=None):
             try:
                 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
                 form_tag = "form2" if form_type == "Форма 2" else "form4"
-                screenshot_path = os.path.join(LOG_DIR, f"{form_tag}_after_submit_{timestamp}.png")
+                screenshots_dir = os.path.join(LOG_DIR, "screenshots")
+                os.makedirs(screenshots_dir, exist_ok=True)
+                screenshot_path = os.path.join(screenshots_dir, f"{form_tag}_after_submit_{timestamp}.png")
                 html_path = os.path.join(LOG_DIR, f"{form_tag}_after_submit_{timestamp}.html")
                 await page.screenshot(path=screenshot_path, full_page=True)
                 html = await page.content()
