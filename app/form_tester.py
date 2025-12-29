@@ -48,7 +48,7 @@ async def fill_and_submit_form(page, form_type, url, popup_button=None):
                     f"Повторяем..."
                 )
 
-        if form_type == "Форма 5":
+        if form_type in {"Форма 5", "Форма 6"}:
             try:
                 logging.info(f"[{form_type}] Ожидание кнопки согласия: #accept-consents")
                 await page.wait_for_selector(".co__footer #accept-consents", timeout=10000)
@@ -242,8 +242,8 @@ async def fill_and_submit_form(page, form_type, url, popup_button=None):
             logging.error(msg)
             return False, msg
 
-        logging.info(f"[{form_type}] Ждём 5 секунд после отправки формы")
-        await asyncio.sleep(5)
+        logging.info(f"[{form_type}] Ждём 10 секунд после отправки формы")
+        await asyncio.sleep(10)
 
         success_msg = f"✅ Успешно отправлена форма: {form_type}"
         logging.info(success_msg)
