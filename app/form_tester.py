@@ -197,31 +197,24 @@ async def fill_and_submit_form(page, form_type, url, popup_button=None):
             except Exception as e:
                 logging.warning(f"[{form_type}] Ошибка при клике по 'option-web': {e}")
 
-        def _form_tag_for_filename():
-            return form_type.replace("Форма ", "form").lower().replace(" ", "_")
-
-        def _selector_tag(selector):
-            return "".join(c if c.isalnum() else "_" for c in selector).strip("_")
-
-        async def click_if_exists(selector):
+        async def click_if_exists(selector, use_force=False, use_js=False, use_position=False):
             try:
                 logging.info(f"[{form_type}] Поиск кнопки отправки: {selector}")
                 btn = await page.wait_for_selector(selector, state="visible", timeout=5000)
-                if form_type in {"Форма 1", "Форма 2", "Форма 3", "Форма 4"}:
-                    try:
-                        await asyncio.sleep(1)
-                        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-                        screenshots_dir = os.path.join(LOG_DIR, "screenshots")
-                        os.makedirs(screenshots_dir, exist_ok=True)
-                        screenshot_name = (
-                            f"{_form_tag_for_filename()}_before_submit_{timestamp}_{_selector_tag(selector)}.png"
-                        )
-                        screenshot_path = os.path.join(screenshots_dir, screenshot_name)
-                        await page.screenshot(path=screenshot_path, full_page=True)
-                        logging.info(f"[{form_type}] Сохранен скрин перед отправкой: {screenshot_path}")
-                    except Exception as e:
-                        logging.warning(f"[{form_type}] Не удалось сохранить скрин перед отправкой: {e}")
-                await btn.click(force=True)
+                if use_js:
+                    await btn.evaluate("el => el.click()")
+                elif use_position:
+                    box = await btn.bounding_box()
+                    if not box:
+                        raise Exception("Не удалось получить bounding box для кнопки")
+                    x = max(4, box["width"] * 0.02)
+                    y = max(4, box["height"] * 0.02)
+                    await btn.click(
+                        position={"x": x, "y": y},
+                        force=use_force
+                    )
+                else:
+                    await btn.click(force=use_force)
                 logging.info(f"[{form_type}] Кнопка {selector} нажата")
                 return True
             except PlaywrightTimeoutError:
@@ -232,6 +225,14 @@ async def fill_and_submit_form(page, form_type, url, popup_button=None):
                 return False
 
         clicked = await click_if_exists("a.feedback_submit")
+        if not clicked and form_type == "Форма 2":
+            clicked = await click_if_exists(
+                "form.feedback_form a.submit_button",
+                use_force=True,
+                use_position=True
+            )
+            if not clicked:
+                clicked = await click_if_exists("form.feedback_form a.submit_button", use_js=True)
         if not clicked:
             clicked = await click_if_exists("a.submit_button")
         if not clicked:
@@ -243,21 +244,6 @@ async def fill_and_submit_form(page, form_type, url, popup_button=None):
 
         logging.info(f"[{form_type}] Ждём 5 секунд после отправки формы")
         await asyncio.sleep(5)
-        if form_type in {"Форма 2", "Форма 4"}:
-            try:
-                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-                form_tag = "form2" if form_type == "Форма 2" else "form4"
-                screenshots_dir = os.path.join(LOG_DIR, "screenshots")
-                os.makedirs(screenshots_dir, exist_ok=True)
-                screenshot_path = os.path.join(screenshots_dir, f"{form_tag}_after_submit_{timestamp}.png")
-                html_path = os.path.join(LOG_DIR, f"{form_tag}_after_submit_{timestamp}.html")
-                await page.screenshot(path=screenshot_path, full_page=True)
-                html = await page.content()
-                with open(html_path, "w", encoding="utf-8") as f:
-                    f.write(html)
-                logging.info(f"[{form_type}] Сохранены диагностические файлы: {screenshot_path}, {html_path}")
-            except Exception as e:
-                logging.warning(f"[{form_type}] Не удалось сохранить диагностику после отправки: {e}")
 
         success_msg = f"✅ Успешно отправлена форма: {form_type}"
         logging.info(success_msg)
@@ -271,8 +257,12 @@ async def fill_and_submit_form(page, form_type, url, popup_button=None):
 
 async def main():
     forms = [
+        {"name": "Форма 1", "url": "https://www.metawebart.com/en", "popup_button": "#consultation-button"},
         {"name": "Форма 2", "url": "https://www.metawebart.com/en", "popup_button": None},
+        {"name": "Форма 3", "url": "https://www.metawebart.com/en/page/large_projects-ru", "popup_button": "#consultation-button"},
         {"name": "Форма 4", "url": "https://www.metawebart.com/en/page/large_projects-ru", "popup_button": None},
+        {"name": "Форма 5", "url": "https://meta-sistem.md", "popup_button": "section#hero .btn"},
+        {"name": "Форма 6", "url": "https://meta-sistem.md/ru/web", "popup_button": None}
     ]
 
     results = []
