@@ -25,9 +25,9 @@
 ### Установка/клонирование из Git
 ```
 # HTTPS
-git clone <YOUR_REPO_URL>.git tester-of-form && cd tester-of-form
+git clone https://github.com/kodjooo/tester-of-form.git tester-of-form && cd tester-of-form
 # или SSH
-# git clone git@github.com:<org>/<repo>.git tester-of-form && cd tester-of-form
+# git clone git@github.com:kodjooo/tester-of-form.git tester-of-form && cd tester-of-form
 
 # создайте .env на основе примера ниже
 cp /dev/null .env && printf 'HEADLESS=true
@@ -40,6 +40,9 @@ LOOKBACK_MINUTES=15
 DELETE_AFTER_PROCESSING=true
 TELEGRAM_TOKEN=1111111111:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 TELEGRAM_CHAT_ID=-1000000000000
+SCHEDULE_DAILY_AT=05:00
+SCHEDULE_TZ=Europe/Moscow
+RUN_ON_START=false
 ' >> .env
 
 # запуск
@@ -81,6 +84,21 @@ docker compose up -d --build
 - `SCHEDULE_DAILY_AT` — время ежедневного запуска в формате `HH:MM`
 - `SCHEDULE_TZ` — часовой пояс IANA
 - `RUN_ON_START` — выполнить задачи сразу при запуске контейнера
+
+### Локальный запуск без Docker (Python)
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+python -m playwright install chromium
+
+set -a
+source .env
+set +a
+
+# Для локального запуска используйте LOG_DIR=logs
+python -m app.run
+```
 
 
 ## Развертывание и управление
@@ -140,30 +158,6 @@ docker compose logs --since="1h" tester                     # v2
 docker-compose logs --since="1h" tester                     # v1
 ```
 
-### Локальная сборка и запуск без Compose
-
-```bash
-# Сборка образа
-docker build -t tester-of-form:latest .
-
-# Запуск в фоновом режиме с автоперезапуском
-docker run -d --name tester-of-form \
-  --restart unless-stopped \
-  --env-file .env \
-  -e SCHEDULE_DAILY_AT=05:00 \
-  -e SCHEDULE_TZ=Europe/Moscow \
-  -e RUN_ON_START=false \
-  -v $(pwd)/logs:/app/logs \
-  -v $(pwd)/app:/app/app \
-  tester-of-form:latest
-
-# Остановка и удаление контейнера
-docker stop tester-of-form && docker rm tester-of-form
-
-# Просмотр логов
-docker logs -f tester-of-form
-```
-
 ### Развертывание на удаленном сервере
 
 **С Docker Compose (если установлен):**
@@ -190,52 +184,13 @@ docker compose down                     # v2
 docker-compose down                     # v1
 ```
 
-**Только с Docker (без Compose):**
-```bash
-# На сервере
-git clone https://github.com/kodjooo/tester-of-form.git && cd tester-of-form
-
-# Создайте файл .env с настройками
-nano .env
-
-# Сборка и запуск
-docker build -t tester-of-form:latest .
-docker run -d --name tester-of-form \
-  --restart unless-stopped \
-  --env-file .env \
-  -e SCHEDULE_DAILY_AT=05:00 \
-  -e SCHEDULE_TZ=Europe/Moscow \
-  -e RUN_ON_START=false \
-  -v $(pwd)/logs:/app/logs \
-  tester-of-form:latest
-
-# Управление контейнером
-docker ps                              # Проверить статус
-docker logs -f tester-of-form         # Просмотр логов
-docker stop tester-of-form            # Остановка
-docker start tester-of-form           # Запуск остановленного контейнера
-docker restart tester-of-form         # Перезапуск
-docker rm tester-of-form              # Удаление (после остановки)
-```
-
 **Обновление на удаленном сервере:**
 ```bash
-# Остановка текущего контейнера
-docker stop tester-of-form
-
 # Обновление кода
 git pull origin main
 
-# Пересборка и запуск обновленной версии
-docker build -t tester-of-form:latest . && docker rm tester-of-form
-docker run -d --name tester-of-form \
-  --restart unless-stopped \
-  --env-file .env \
-  -e SCHEDULE_DAILY_AT=05:00 \
-  -e SCHEDULE_TZ=Europe/Moscow \
-  -e RUN_ON_START=false \
-  -v $(pwd)/logs:/app/logs \
-  tester-of-form:latest
+# Пересборка и перезапуск
+docker compose up -d --build
 ```
 
 ## Дополнительная информация
@@ -272,7 +227,7 @@ docker-compose logs -f tester --tail=100        # v1
 ```
 
 ### Устранение неполадок
-- При ошибках браузера проверьте настройку `HEADLESS=true`
+- При ошибках браузера проверьте настройку `HEADLESS=true` (headless=false в контейнере требует X-server)
 - При проблемах с почтой убедитесь, что используете App Password для Gmail
 - Проверьте корректность TELEGRAM_TOKEN и CHAT_ID через отправку тестового сообщения
 - При изменении требований (`requirements.txt`) всегда пересобирайте образ
